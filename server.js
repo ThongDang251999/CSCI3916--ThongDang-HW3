@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const passport = require('passport');
@@ -67,12 +68,91 @@ router.post('/signin', async (req, res) => { // Use async/await
   }
 });
 
+// Movies routes
 router.route('/movies')
     .get(authJwtController.isAuthenticated, async (req, res) => {
-        return res.status(500).json({ success: false, message: 'GET request not supported' });
+        try {
+            const movies = await Movie.find();
+            res.json({ success: true, movies });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, message: 'Error fetching movies' });
+        }
     })
     .post(authJwtController.isAuthenticated, async (req, res) => {
-        return res.status(500).json({ success: false, message: 'POST request not supported' });
+        if (!req.body.title || !req.body.releaseDate || !req.body.genre || !req.body.actors || req.body.actors.length < 1) {
+            return res.status(400).json({ success: false, message: 'Please provide all required fields (title, releaseDate, genre, and at least one actor)' });
+        }
+
+        try {
+            const movie = new Movie({
+                title: req.body.title,
+                releaseDate: req.body.releaseDate,
+                genre: req.body.genre,
+                actors: req.body.actors
+            });
+
+            await movie.save();
+            res.status(201).json({ success: true, message: 'Movie created successfully', movie });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, message: err.message });
+        }
+    });
+
+router.route('/movies/:id')
+    .get(authJwtController.isAuthenticated, async (req, res) => {
+        try {
+            const movie = await Movie.findById(req.params.id);
+            if (!movie) {
+                return res.status(404).json({ success: false, message: 'Movie not found' });
+            }
+            res.json({ success: true, movie });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, message: 'Error fetching movie' });
+        }
+    })
+    .put(authJwtController.isAuthenticated, async (req, res) => {
+        if (!req.body.title || !req.body.releaseDate || !req.body.genre || !req.body.actors || req.body.actors.length < 1) {
+            return res.status(400).json({ success: false, message: 'Please provide all required fields (title, releaseDate, genre, and at least one actor)' });
+        }
+
+        try {
+            const movie = await Movie.findByIdAndUpdate(
+                req.params.id,
+                {
+                    title: req.body.title,
+                    releaseDate: req.body.releaseDate,
+                    genre: req.body.genre,
+                    actors: req.body.actors
+                },
+                { new: true }
+            );
+
+            if (!movie) {
+                return res.status(404).json({ success: false, message: 'Movie not found' });
+            }
+
+            res.json({ success: true, message: 'Movie updated successfully', movie });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, message: err.message });
+        }
+    })
+    .delete(authJwtController.isAuthenticated, async (req, res) => {
+        try {
+            const movie = await Movie.findByIdAndDelete(req.params.id);
+            
+            if (!movie) {
+                return res.status(404).json({ success: false, message: 'Movie not found' });
+            }
+
+            res.json({ success: true, message: 'Movie deleted successfully' });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, message: 'Error deleting movie' });
+        }
     });
 
 app.use('/', router);

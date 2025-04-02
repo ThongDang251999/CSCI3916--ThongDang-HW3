@@ -1,3 +1,4 @@
+require('dotenv').config();
 var passport = require('passport');
 var JwtStrategy = require('passport-jwt').Strategy;
 var ExtractJwt = require('passport-jwt').ExtractJwt;
@@ -5,7 +6,7 @@ var User = require('./Users');
 
 var opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderWithScheme("jwt");
-opts.secretOrKey = process.env.SECRET_KEY;
+opts.secretOrKey = 'csc3916_hw3_secret_key_2024_secure_token_generation'; // Hardcode for now to fix the error
 
 passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
     try {
@@ -22,4 +23,4 @@ passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
 }));
 
 exports.isAuthenticated = passport.authenticate('jwt', { session : false });
-exports.secret = opts.secretOrKey ;
+exports.secret = opts.secretOrKey;

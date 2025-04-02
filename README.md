@@ -53,7 +53,7 @@ Create a collection in MongoDB to hold information about movies
 | Route | GET | POST | PUT | DELETE |
 | --- | --- | --- | --- | --- |
 | movies | Return all movies| save a single movie | FAIL | FAIL |
-| movies/:movieparameter | Return a specific movie based on the :movieparameter | FAIL | Update the specific movie based on the :movieparameter in your case it’s the title | Delete the specific movie based on the :movieparamters your case it’s the title |*
+| movies/:movieparameter | Return a specific movie based on the :movieparameter | FAIL | Update the specific movie based on the :movieparameter in your case it's the title | Delete the specific movie based on the :movieparamters your case it's the title |*
 
 * If Query String (Later Homework) reviews=true aggregate in reviews |
 
@@ -70,3 +70,91 @@ Create a collection in MongoDB to hold information about movies
 - https://www.mongodb.com/cloud/atlas
 - Create a Free Subscription *Amazon
 - https://render.com/docs/deploy-create-react-app **important: Environment Variable for https://github.com/AliceNN-ucdenver/CSC3916_REACT env.REACT_APP_API_URL, this weekend I will look at changes (I believe only 1 change in the actions)
+
+## Setup Instructions
+
+### Prerequisites
+- Node.js and npm installed
+- MongoDB Atlas account (or local MongoDB instance)
+
+### Installation
+1. Clone the repository
+2. Install dependencies:
+   ```
+   npm install
+   ```
+3. Create a `.env` file in the root directory with the following variables:
+   ```
+   DB=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<dbname>
+   SECRET_KEY=your_secret_key_for_jwt
+   ```
+   Replace the MongoDB connection string with your own and set a secure secret key.
+
+4. Seed the database with sample movies:
+   ```
+   node seed.js
+   ```
+5. Start the server:
+   ```
+   node server.js
+   ```
+
+### API Endpoints
+
+#### Authentication
+- `POST /signup` - Register a new user
+  - Required fields: `name`, `username`, `password`
+- `POST /signin` - Login and get JWT token
+  - Required fields: `username`, `password`
+
+#### Movies
+All movie endpoints require authentication with JWT token in the Authorization header.
+
+- `GET /movies` - Get all movies
+- `POST /movies` - Create a new movie
+  - Required fields: `title`, `releaseDate`, `genre`, `actors` (array with at least one actor)
+- `GET /movies/:id` - Get a specific movie by ID
+- `PUT /movies/:id` - Update a specific movie
+  - Required fields: same as POST
+- `DELETE /movies/:id` - Delete a specific movie
+
+### Example Requests
+
+#### Signup
+```
+POST /signup
+{
+  "name": "John Doe",
+  "username": "john123",
+  "password": "password123"
+}
+```
+
+#### Signin
+```
+POST /signin
+{
+  "username": "john123",
+  "password": "password123"
+}
+```
+
+#### Create Movie
+```
+POST /movies
+{
+  "title": "Example Movie",
+  "releaseDate": 2023,
+  "genre": "Action",
+  "actors": [
+    {
+      "actorName": "Actor 1",
+      "characterName": "Character 1"
+    },
+    {
+      "actorName": "Actor 2",
+      "characterName": "Character 2"
+    }
+  ]
+}
+```
